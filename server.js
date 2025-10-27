@@ -489,7 +489,7 @@ app.put('/api/posts/:id', authenticateToken, async (req, res) => {
     const { id } = req.params;
     
     const [posts] = await pool.query(
-      'SELECT authorId FROM Content WHERE contentId = ?',
+      'SELECT authorId FROM content WHERE contentId = ?',
       [id]
     );
     
@@ -526,7 +526,7 @@ app.put('/api/posts/:id', authenticateToken, async (req, res) => {
     }
 
     await pool.query(
-      'UPDATE Content SET title = ?, body = ?, categoryId = ? WHERE contentId = ?',
+      'UPDATE content SET title = ?, body = ?, categoryId = ? WHERE contentId = ?',
       [title, content, categoryID, id]
     );
 
@@ -570,7 +570,7 @@ app.delete('/api/posts/:id', authenticateToken, async (req, res) => {
     const { id } = req.params;
     
     const [posts] = await pool.query(
-      'SELECT authorId FROM Content WHERE contentId = ?',
+      'SELECT authorId FROM content WHERE contentId = ?',
       [id]
     );
     
@@ -649,7 +649,7 @@ app.get('/api/categories', async (req, res) => {
     const [categories] = await pool.query(
       `SELECT c.*, COUNT(co.contentId) as postCount
        FROM Category c
-       LEFT JOIN Content co ON c.categoryId = co.categoryId
+       LEFT JOIN content co ON c.categoryId = co.categoryId
        GROUP BY c.categoryId`
     );
 

@@ -420,7 +420,7 @@ app.post('/api/posts', authenticateToken, async (req, res) => {
         categoryID = categories[0].categoryId;
       } else {
         const [result] = await pool.query(
-          'INSERT INTO Category (name) VALUES (?)',
+          'INSERT INTO category (name) VALUES (?)',
           [category]
         );
         categoryID = result.insertId;

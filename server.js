@@ -132,7 +132,7 @@ app.post('/api/auth/register', async (req, res) => {
     }
 
     const [existing] = await pool.query(
-      'SELECT userId FROM Users WHERE email = ?',
+      'SELECT userId FROM users WHERE email = ?',
       [email]
     );
 
@@ -149,7 +149,7 @@ app.post('/api/auth/register', async (req, res) => {
     const roleId = roles.length > 0 ? roles[0].roleId : 2;
 
     const [result] = await pool.query(
-      'INSERT INTO Users (name, email, pwd, roleId) VALUES (?, ?, ?, ?)',
+      'INSERT INTO users (name, email, pwd, roleId) VALUES (?, ?, ?, ?)',
       [name, email, password, roleId]
     );
 

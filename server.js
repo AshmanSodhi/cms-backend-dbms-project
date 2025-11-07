@@ -286,7 +286,8 @@ app.get('/api/auth/my-posts', authenticateToken, async (req, res) => {
       category: post.category,
       tags: post.tags ? post.tags.split(',') : [],
       views: post.views || 0,
-      icon: '📝'
+      imageUrl: post.imageUrl, // ADD THIS
+      icon: '📄'
     }));
 
     res.json(formatted);
@@ -340,7 +341,8 @@ app.get('/api/posts', async (req, res) => {
       category: post.category,
       tags: post.tags ? post.tags.split(',') : [],
       views: post.views || 0,
-      icon: '📝'
+      imageUrl: post.imageUrl, // ADD THIS
+      icon: '📄'
     }));
 
     res.json(formatted);
@@ -349,6 +351,7 @@ app.get('/api/posts', async (req, res) => {
     res.status(500).json({ error: 'Failed to fetch posts' });
   }
 });
+
 
 // Get single content by ID
 app.get('/api/posts/:id', async (req, res) => {
@@ -392,7 +395,8 @@ app.get('/api/posts/:id', async (req, res) => {
         year: 'numeric' 
       }),
       dateCreated: post.dateCreated,
-      tags: post.tags ? post.tags.split(',') : []
+      tags: post.tags ? post.tags.split(',') : [],
+      imageUrl: post.imageUrl // ADD THIS
     });
   } catch (error) {
     console.error('Get post error:', error);
@@ -403,7 +407,7 @@ app.get('/api/posts/:id', async (req, res) => {
 // Create content (authenticated users only)
 app.post('/api/posts', authenticateToken, async (req, res) => {
   try {
-    const { title, content, category, tags, date } = req.body;
+    const { title, content, category, tags, date, imageUrl } = req.body; // ADD imageUrl
 
     if (!title || !content) {
       return res.status(400).json({ error: 'Title and content are required' });
@@ -427,9 +431,10 @@ app.post('/api/posts', authenticateToken, async (req, res) => {
       }
     }
 
+    // UPDATE INSERT QUERY TO INCLUDE imageUrl
     const [result] = await pool.query(
-      'INSERT INTO content (title, body, authorId, categoryId, dateCreated) VALUES (?, ?, ?, ?, ?)',
-      [title, content, req.user.id || req.user.userId, categoryID, date || new Date()]
+      'INSERT INTO content (title, body, authorId, categoryId, dateCreated, imageUrl) VALUES (?, ?, ?, ?, ?, ?)',
+      [title, content, req.user.id || req.user.userId, categoryID, date || new Date(), imageUrl || null]
     );
 
     const contentID = result.insertId;
@@ -497,7 +502,6 @@ app.put('/api/posts/:id', authenticateToken, async (req, res) => {
       return res.status(404).json({ error: 'Post not found' });
     }
 
-    // Check if user is author or admin (roleId = 1)
     const isAuthor = posts[0].authorId === (req.user.id || req.user.userId);
     const isAdmin = req.user.roleId === 1 || req.user.roleName === 'admin';
 
@@ -505,7 +509,7 @@ app.put('/api/posts/:id', authenticateToken, async (req, res) => {
       return res.status(403).json({ error: 'Not authorized' });
     }
 
-    const { title, content, category, tags } = req.body;
+    const { title, content, category, tags, imageUrl } = req.body; // ADD imageUrl
 
     let categoryID = null;
     if (category) {
@@ -525,9 +529,10 @@ app.put('/api/posts/:id', authenticateToken, async (req, res) => {
       }
     }
 
+    // UPDATE UPDATE QUERY TO INCLUDE imageUrl
     await pool.query(
-      'UPDATE content SET title = ?, body = ?, categoryId = ? WHERE contentId = ?',
-      [title, content, categoryID, id]
+      'UPDATE content SET title = ?, body = ?, categoryId = ?, imageUrl = ? WHERE contentId = ?',
+      [title, content, categoryID, imageUrl || null, id]
     );
 
     if (tags) {
@@ -648,7 +653,7 @@ app.get('/api/categories', async (req, res) => {
   try {
     const [categories] = await pool.query(
       `SELECT c.*, COUNT(co.contentId) as postCount
-       FROM category c
+       FROM Category c
        LEFT JOIN content co ON c.categoryId = co.categoryId
        GROUP BY c.categoryId`
     );
@@ -733,4 +738,3 @@ app.listen(PORT, () => {
   console.log(`✓ Server running on http://localhost:${PORT}`);
   console.log(`✓ Make sure to update database credentials in the code`);
 });
-

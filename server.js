@@ -653,7 +653,7 @@ app.get('/api/categories', async (req, res) => {
   try {
     const [categories] = await pool.query(
       `SELECT c.*, COUNT(co.contentId) as postCount
-       FROM Category c
+       FROM category c
        LEFT JOIN content co ON c.categoryId = co.categoryId
        GROUP BY c.categoryId`
     );
